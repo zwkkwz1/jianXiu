@@ -76,14 +76,14 @@
 		            <td><div style="min-width:205px" class=""></div>10:21</td>
 		            <td>
 		                <div style="max-width:120px">
-		                    <button type="button" class="callBedButton" @click="finishRest" disabled>结束</button>
+		                    <button type="button" class="callBedButton" @click="finishRest">结束</button>
 		                </div>
 		            </td>
 		          </tr>
 		        </tbody>
 		    </table>
 			</div>
-			<span>当日未安排</span><button type="button" class="callBedButton" @click="startRest">开始</button>
+			<span>当日未安排</span><button type="button" class="callBedButton" @click="addTrainNumber">临时增加</button>
 			<div class="callBedTable">
 		    <table style="width: 100%" class="table-hover">
 		        <colgroup>
@@ -114,7 +114,7 @@
 		            <td><div style="min-width:205px" class=""></div>10:21</td>
 		            <td>
 		                <div style="max-width:120px">
-		                    <button type="button" class="btn btn-mini" @click="finishRest" disabled>结束</button>
+		                    <button type="button" class="btn btn-mini" @click="startRest">开始</button>
 		                </div>
 		            </td>
 		          </tr>
