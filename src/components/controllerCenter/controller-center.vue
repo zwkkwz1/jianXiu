@@ -17,30 +17,32 @@
 		            <col/>
 		            <col/>
 		            <col/>
+		            <col/>
+		            <col/>
 		            <col style="width:120px">
 		        </colgroup>
 		        <thead>
 		            <th>序号</th>
 		            <th>车次</th>
 		            <th>司机</th>
-		            <th>开车时间</th>
-		            <th>铺位号</th>
-		            <th>叫班时间</th>
-		            <th></th>
+		            <th>到达时间</th>
+		            <th>首次叫班</th>
+		            <th>二次叫班</th>
+		            <th>人工叫班</th>
+		            <th>出发时间</th>
+		            <th>设备编号</th>
 		        </thead>
 		        <tbody>
-		          <tr v-for="">
-		            <td><div style="max-width:40px" class=""></div>1</td>
-		            <td><div style="min-width:205px" class=""></div>G301</td>
-		            <td><div style="min-width:205px" class=""></div>司机1</td>
-		            <td><div style="min-width:205px" class=""></div>11:11</td>
-		            <td><div style="min-width:205px" class=""></div>201</td>
-		            <td><div style="min-width:205px" class=""></div>10:21</td>
-		            <td>
-		                <div style="max-width:120px">
-		                    <button type="button" class="callBedButton" @click="finishRest" disabled>结束</button>
-		                </div>
-		            </td>
+		          <tr v-for="(completed,$index) in con.completedList">
+		            <td><div style="max-width:60px" v-text="completed.$index"></div>1</td>
+		            <td><div style="min-width:95px" v-text="completed.trainNo"></div></td>
+		            <td><div style="min-width:95px" v-text="completed.driverName"></div></td>
+		            <td><div style="min-width:125px" v-text="completed.startTime"></div></td>
+		            <td><div style="min-width:125px" v-text="completed.remindRealTime1"></div></td>
+		            <td><div style="min-width:125px" v-text="completed.remindRealTime2"></div></td>
+		            <td><div style="min-width:125px" v-text="completed.adminRemindTime"></div></td>
+		            <td><div style="min-width:125px" v-text="completed.endRealTime"></div></td>
+		            <td><div style="min-width:125px" v-text="completed.mid"></div></td>
 		          </tr>
 		        </tbody>
 		    </table>
@@ -67,16 +69,16 @@
 		            <th></th>
 		        </thead>
 		        <tbody>
-		          <tr v-for="">
-		            <td><div style="max-width:40px" class=""></div>1</td>
-		            <td><div style="min-width:205px" class=""></div>G301</td>
-		            <td><div style="min-width:205px" class=""></div>司机1</td>
-		            <td><div style="min-width:205px" class=""></div>11:11</td>
-		            <td><div style="min-width:205px" class=""></div>201</td>
-		            <td><div style="min-width:205px" class=""></div>10:21</td>
+		          <tr v-for="(notFinished,$index) in con.notFinishedList">
+		            <td><div style="max-width:60px" v-text="notFinished.$index"></div></td>
+		            <td><div style="min-width:135px" v-text="notFinished.trainNo"></div></td>
+		            <td><div style="min-width:135px" v-text="notFinished.driverName"></div></td>
+		            <td><div style="min-width:185px" v-text="notFinished.trainDt"></div></td>
+		            <td><div style="min-width:135px" v-text="notFinished.bedNo"></div></td>
+		            <td><div style="min-width:185px" v-text="notFinished.remindPlanedTime1"></div></td>
 		            <td>
 		                <div style="max-width:120px">
-		                    <button type="button" class="callBedButton" @click="finishRest">结束</button>
+		                    <qr startUrl="/static/qr.json" type="restOver" url="/static/qr.json" buttonSpan="结束"></qr>
 		                </div>
 		            </td>
 		          </tr>
@@ -105,16 +107,19 @@
 		            <th></th>
 		        </thead>
 		        <tbody>
-		          <tr v-for="">
-		            <td><div style="max-width:40px" class=""></div>1</td>
-		            <td><div style="min-width:205px" class=""></div>G301</td>
-		            <td><div style="min-width:205px" class=""></div>司机1</td>
-		            <td><div style="min-width:205px" class=""></div>11:11</td>
-		            <td><div style="min-width:205px" class=""></div>201</td>
-		            <td><div style="min-width:205px" class=""></div>10:21</td>
+		          <tr v-for="(notArranged,$index) in con.notArrangedList">
+		            <td><input type="text" style="max-width:60px" v-model="notArranged.$index" /></td>
+		            <td><input type="text" style="min-width:135px" v-model="notArranged.trainNo" /></td>
+		            <td><input type="text" style="min-width:135px" v-model="notArranged.driverName" /></td>
+		            <td><input type="text" style="min-width:185px" v-model="notArranged.trainDt" /></td>
+		            <td><select name="" style="min-width:135px" v-model="notArranged.bedNo">
+		            	<option v-for="bedNo in con.bedNos">{{ bedNo }}</option>
+		            </select></td>
+		            <td><input type="text" style="min-width:185px" v-model="notArranged.remindPlanedTime1" /></td>
 		            <td>
 		                <div style="max-width:120px">
-		                    <button type="button" class="btn btn-mini" @click="startRest">开始</button>
+		                	<qr startUrl="/static/restStart.json" url="/static/qr.json" type="restStart" 
+		                		:params="notArranged" buttonSpan="开始"></qr>
 		                </div>
 		            </td>
 		          </tr>
@@ -126,12 +131,46 @@
 </template>
 
 <script>
+/**
+ * con:controller缩写
+ */
+import axios from 'axios'
+import qr from '@/components/QRCode/QR'
 export default {
   name: 'controllerCenter',
   data () {
     return {
-      aheadOfTime: 50
+      aheadOfTime: 50,
+      con: new Object
     }
+  },
+  components: {qr},
+  mounted () {
+  	this.$nextTick(() => {
+      this.fetchData();
+	      setInterval(()=>{
+	      	this.fetchData ();
+	      },50000000)
+    });
+  },
+  methods: {
+  	fetchData () {
+    	var self = this;
+	    return axios({
+				  method: 'get',
+				  url: '/static/controllerLeft.json',
+//				  url: 'http://localhost:9180/app/time',
+				  headers: {'appType': 'web','appid': 'logan'}
+				})
+	      .then( (response) => {
+	      	var response = response.data;
+	      	if (response.type === 1) {
+	      		self.con = response.result;
+	      	}
+	      }).catch( (error) => {
+	        alert("网络连接失败")
+	      })
+	  }
   }
 }
 </script>
@@ -170,5 +209,18 @@ export default {
 .callBedTable table thead{
 	background-color: #425574;
 	color: #ffffff;
+}
+.callBedTable td input{
+	font-size: 16px;
+	height: 20px;
+}
+.callBedTable td select{
+	height: 26px;
+}
+.callBedTable td button{
+	height: 25px;
+  width: 115px;
+  background-color: #7b93f6;
+  color: white;
 }
 </style>

@@ -1,0 +1,13 @@
+{
+    "type": 1,
+    "msg": "",
+    "result": {
+        "sid": 123,
+        "status": 1,
+        "remindPlanedTime1": "14:05",
+        "bedNo": "102-02",
+        "trainNo": "G1234",
+        "startTime": "14:55",
+        "name":"张三"
+    }
+}

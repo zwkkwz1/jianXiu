@@ -4,10 +4,13 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import axios from 'axios'
-//import './assets/css/twitter/3.3.7/bootstrap.min.css'
+import QRCode from 'qrcode'
 
+//import './assets/css/twitter/3.3.7/bootstrap.min.css'
+Vue.use(QRCode)
 Vue.config.productionTip = false
-//Vue.prototype.$http = axios; //如何把axios变成全局变量
+Vue.use(axios)
+Vue.prototype.$http = axios //如何把axios变成全局变量
 
 /* eslint-disable no-new */
 new Vue({

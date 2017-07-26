@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+
 export default {
   name: 'app',
   data () {
@@ -42,7 +42,7 @@ export default {
   },
   mounted () {
   	this.$nextTick(function () {
-      this.fetchData();
+
     });
     setInterval(()=>{
   	 this.filterTime ();
@@ -62,17 +62,7 @@ export default {
       this.currentdate = "<div>" + date.getFullYear() + "-" + month + "-" + strDate + "</div>" 
             + "<div>" + date.getHours() + ":" + date.getMinutes()
             + ":" + date.getSeconds() + "</div>";
-    },
-    fetchData () {
-	    var self = this
-	    return axios.get('/zwkkkkkk')
-	      .then(function (response) {
-	        self.posts = response.data.posts
-	      })
-	      .catch(function (error) {
-	        self.fetchError = error
-	      })
-	  }
+    }
   }
 }
 </script>
