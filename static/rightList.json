@@ -1,0 +1,25 @@
+{
+    "type":1,
+    "msg":"",
+    "result":{
+        "manuallyList":[
+            {
+                "trainNo":"G201",
+                "driverName":"张三",
+                "bedNo":"101",
+                "remindPlanedTime":"09:30",
+                "remindTimes":2,
+                "remindResponse":true
+            }
+        ],
+        "autoList":[
+            {
+                "trainNo":"G301",
+                "driverName":"李四",
+                "remindRealTime":"11:30",
+                "remindTimes":1,
+                "remindResponse":true
+            }
+        ]
+    }
+}

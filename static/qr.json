@@ -3,11 +3,12 @@
     "msg": "",
     "result": {
         "sid": 123,
-        "status": 1,
-        "remindPlanedTime1": "14:05",
-        "bedNo": "102-02",
+        "status": "1",
+        "remindPlanedTime1": "16:00",
         "trainNo": "G1234",
+        "driverName":"张三",
+        "trainDt": "16:50",
         "startTime": "14:55",
-        "name":"张三"
+        "bedNo": "102-02"
     }
 }

@@ -2,24 +2,23 @@
   <div>
   	<button type="button" class="btn btn-mini" @click="qrBtn" v-text="buttonSpan"></button>
   	<div v-if="popup" class="modal-backdrop fade in" modal-animation-class="fade" modal-backdrop="modal-backdrop" modal-animation="true" style="z-index: 1040;"></div>
-	<div class="popup" v-if="popup">
-	  <div class="head" style="text-align: center;">
-	  	<h3></h3>
-		<i class="icon-remove icon-white" @click="cancelEdit()"></i>			  	
-	  </div>
-	  <div class="popup-left">
-	  	<div>连续车次：<span v-text="qrVo.trainNo"></span></div>
-	  	<div>司机：<span v-text="qrVo.driverName"></span></div>
-	  	<div>开车时间：<span v-text="qrVo.trainDt"></span></div>
-	  	<div>叫班时间：<span v-text="qrVo.remindPlanedTime1"></span></div>
-	  	<div>铺位号：<span v-text="qrVo.bedNo"></span></div>
-	  	<div class="prompt">请扫描二维码</span></div>
-	  	<div class="prompt" v-if="scanQrSuccess" v-text="qrVo.msg"></div>
-	  </div>
-	  <div class="popup-right">
-	  	<div id='code'></div>
-			<canvas id="canvas"></canvas>
-		</div>
+		<div class="popup" v-if="popup">
+		  <div class="head" style="text-align: center;">
+		  	<h3></h3>
+			<i class="icon-remove icon-white" @click="cancelEdit()"></i>			  	
+		  </div>
+		  <div class="popup-left">
+		  	<div>接续车次：<span v-text="qrVo.trainNo"></span></div>
+		  	<div>司机：<span v-text="qrVo.driverName"></span></div>
+		  	<div>开车时间：<span v-text="qrVo.trainDt"></span></div>
+		  	<div>叫班时间：<span v-text="qrVo.remindPlanedTime1"></span></div>
+		  	<div>铺位号：<input id="bedNo" type="text" v-text="qrVo.bedNo" /></div>
+		  	<div class="prompt">请扫描二维码!</span></div>
+		  	<div class="prompt" v-text="qrMsg"></div>
+		  </div>
+		  <div v-if="qr" class="popup-right">
+		  	<qriously :value="qrScan" :size="200" />
+			</div>
 	  </div>
 	</div>
   </div>
@@ -27,58 +26,134 @@
 
 <script>
 import axios from 'axios'
-import QRCode from 'qrcode'
+
 export default {
   name: 'QR',
   data () {
     return {
       popup: false,
-      scanQrSuccess: false,
+      qr: false,
       codes: '',
-      qrVo: {}
-    }
+      qrVo: {},
+      qrMsg: '',
+      qrScon: ''
+		}
   },
   mounted () {
   	this.$nextTick(() => {
-  		this.useqrcode()
+//		var self = this
+//			document.getElementById("bedNo").focus();
+//
+//			document.onkeydown = function(evt) {
+//				var key;
+//				if(window.event) {// IE/Chrome/Opera(新版本)
+//				 	key = evt.keyCode;
+//				}
+//				else if(evt.which){ // Netscape/Firefox/Opera/Chrome/IE（新版本）
+//					key = evt.which;
+//				}
+//				if(key == 13 && self.qrVo.bedNo &&　self.popup){
+//					self.setRestStartInfo();
+//				}
+//			}
     });
+   		var self = this
+			document.getElementById("bedNo").focus();
+
+			document.onkeydown = function(evt) {
+				var key;
+				if(window.event) {// IE/Chrome/Opera(新版本)
+				 	key = evt.keyCode;
+				}
+				else if(evt.which){ // Netscape/Firefox/Opera/Chrome/IE（新版本）
+					key = evt.which;
+				}
+				if(key == 13 && self.qrVo.bedNo &&　self.popup){
+					self.setRestStartInfo();
+				}
+			}
   },
   props: ['startUrl','url','buttonSpan','type','params'],
   methods: {
   	qrBtn (){
+  		this.popup = true;
   		if (this.type === 'restStart') {
-		  var params = this.params;
-		  return axios({
-			method: 'get',
-//			method: 'post',
-			url: this.startUrl,
-//			data: params,
-			headers: {'appType': 'web','appid': 'logan'}
-		  })
-		  .then( (response) => {
-		    var data = response.data;
-		    if (data.type === 1) {
-		      this.qrVo = data.result;
-		      this.popup = true;
-//		      qrcode.makeCode(this.qrVo);
-		    }
-		  }).catch( (error) => {
-		    alert("网络连接失败")
-		  })
-		};
-	},
-	useqrcode(){
-		var canvas = document.getElementById('canvas')
-		
-		QRCode.toCanvas(canvas, 'http://www.baidu.com', function (error) {
-			if (error) 
-			console.error(error)
-			console.log('success!');
-		})
-	},
-	cancelEdit(){
-		this.popup = false;
-	}
+			  this.qrVo = this.params;
+			  this.setRestStartInfo();
+			  let self = this;
+		  } else if (this.type == 'restOver') {
+				var restOverInterval = setInterval(()=>{
+					this.getQrInfo ();
+					if (this.qrVo.status == 3) {
+						this.qrMsg = '间休结束';
+						setTimeout(()=> {
+							this.cancelEdit();
+						},2000)
+						clearInterval(restOverInterval)
+					}
+				},1000);
+		  }
+		},
+		setRestStartInfo() {//01接口
+			this.qr = true;
+			let self = this;
+			return axios({
+					method: 'get',
+//				method: 'post',
+					url: this.startUrl,
+//				data: this.qrVo,
+					headers: {'appType': 'web','appid': 'logan'}
+			  }).then( (response) => {
+			    var data = response.data;
+			    if (data.type === 1) {
+			      self.qrVo = data.result;
+			      self.qrScan = JSON.stringify(data.result);
+			      self.restStartInterval = setInterval(()=>{
+							self.getQrInfo ();
+							if(self.qrVo.status == '2') {
+								self.qrMsg = '设备发放成功';
+								setTimeout(()=> {
+									self.cancelEdit();
+								},2000);
+								clearInterval(self.restStartInterval)
+							}
+						},500);
+			    }
+			  }).catch( (error) => {
+			    this.qrVo.trainNo = '网络链接失败';
+			  })
+		},
+		getQrInfo () {//02接口
+			let self = this; 
+			return axios({
+					method: 'get',
+//				method: 'post',
+					url: this.url,
+//				data: params,
+					headers: {'appType': 'web','appid': 'logan'}
+			  }).then( (response) => {
+			    var data = response.data;
+			    if (data.type === 1) {
+			      self.qrVo = data.result;
+			      if(!self.qrScan){
+			      	self.qrScan = JSON.stringify(data.result);
+			      }
+			    }
+			  }).catch( (error) => {
+			    self.qrVo.trainNo = '网络链接失败';
+			  })
+		},
+		cancelEdit(){
+			clearInterval(this.restStartInterval);
+			this.popup = false;
+			this.qrScan = '';
+			this.qrVo = {};
+			this.qr = false;
+			this.qrMsg = '';
+		},
+		startRest() {
+			
+		}
   }
 }
 </script>
@@ -141,8 +216,8 @@ export default {
 }
 .popup-right{
 	display: inline-block;
-	width: 64%;
-	margin: 15px;
+	width: 50%;
+	margin: 30px 0;
 	float: right;
 }
 .popup-left div{
@@ -150,7 +225,13 @@ export default {
 }
 .prompt{
 	margin: 20px 0 !important;
-    font-size: 18px;
-    font-weight: bold;
+	font-size: 18px;
+	font-weight: bold;
+}
+button{
+	width: 100px;
+	height: 32px;
+	margin: 10px;
+	background: #5bc0de;
 }
 </style>

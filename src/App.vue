@@ -21,20 +21,80 @@
 		  	<router-link to=""></router-link>
 	  	</nav>
 	  </div>
-  	<div style="margin: 140px 30px 0 30px;">
+  	<div style="margin: 140px 30px 0 30px;width: 65%;display: inline-block;">
   		<router-view></router-view>
+  	</div>
+  	<div class="callBedTable" style="width: 30%;display: inline-block;border: 1px solid;">
+  		<div>
+  			<div class="head" style="text-align: center;">
+			  	<div>人工待叫列表</div>		  	
+			  </div>
+  			<div class="manually-list-info">
+  				<span v-text="manuallyListLength"></span>人需人工叫班
+  			</div>
+  			<div>
+  				<table style="width: 95%;margin: 0 13px;" class="table-hover">
+		        <colgroup>
+		            <col style="width:60px">
+		            <col/>
+		            <col/>
+		            <col/>
+		            <col/>
+		            <col/>
+		            <col style="width:120px">
+		        </colgroup>
+		        <thead>
+		            <th>序号</th>
+		            <th>车次</th>
+		            <th>叫班时间</th>
+		            <th>司机</th>
+		            <th>铺位号</th>
+		            <th>叫班次数</th>
+		            <th>有无响应</th>
+		        </thead>
+		        <tbody>
+		          <tr v-for="(manually,$index) in rightList.manuallyList" 
+		          	:class="{isCallBed: manually.remindResponse, notCallBed: !manually.remindResponse}">
+		            <td><div style="max-width:60px" v-text="$index+1"></div></td>
+		            <td><div style="min-width:75px" v-text="manually.trainNo"></div></td>
+		            <td><div style="min-width:95px" v-text="manually.remindPlanedTime"></div></td>
+		            <td><div style="min-width:75px" v-text="manually.driverName"></div></td>
+		            <td><div style="min-width:75px" v-text="manually.bedNo"></div></td>
+		            <td><div style="min-width:95px">{{manually.remindTimes + ' ' + manually.time}}</div></td>
+		            <td><div style="min-width:40px">{{manually.remindResponse?'有':'无'}}</div></td>
+		          </tr>
+		        </tbody>
+		      </table>
+  			</div>
+  		</div>
+  		<div>
+  			<div class="head" style="text-align: center;">
+			  	<div>自动叫醒记录</div>		  	
+			  </div>
+  			<div class="manually-list-info">
+  				<span v-text="autoListLength"></span>人手表一震动，暂不需要干预
+  			</div>
+  			<div v-for="auto in rightList.autoList">
+  				<span>
+  					{{auto.trainNo + "叫班时间  " + auto.remindRealTime + " 已过"}}
+  				</span>
+  				<span>{{auto.remindResponse?'有响应':'无响应'	}}</span>
+  			</div>
+  		</div>
   	</div>
   </div>
 </template>
 
 <script>
-
+import axios from 'axios'
 export default {
   name: 'app',
   data () {
   	return {
   		homeName:"上 海 铁 路 局",
-  		currentdate : ''
+  		currentdate : '',
+  		autoListLength: '',
+  		rightList: {}
   	}
   },
   filters : {
@@ -42,7 +102,9 @@ export default {
   },
   mounted () {
   	this.$nextTick(function () {
-
+			setInterval(()=>{
+  	 		this.getRightList ();
+  		},1000);
     });
     setInterval(()=>{
   	 this.filterTime ();
@@ -62,6 +124,25 @@ export default {
       this.currentdate = "<div>" + date.getFullYear() + "-" + month + "-" + strDate + "</div>" 
             + "<div>" + date.getHours() + ":" + date.getMinutes()
             + ":" + date.getSeconds() + "</div>";
+    },
+    getRightList() {//获取控制中心右侧列表信息，接口12
+    	let self = this;
+   		return axios({
+				method: 'get',
+				url: '/static/rightList.json',
+			  headers: {'appType': 'web','appid': 'logan'}
+			})
+	    .then( (response) => {
+	      var data = response.data;
+	      if (data.type === 1) {
+	      	self.rightList = data.result;
+	      	self.manuallyListLength = self.rightList.manuallyList.length;
+	      	self.rightList.manuallyList.time = 0;
+	      	self.autoListLength = self.rightList.autoList.length;
+	      }
+	    }).catch( (error) => {
+	      alert("右侧列表数据获取失败")
+	    })
     }
   }
 }
@@ -145,5 +226,21 @@ a:active {
 	text-decoration: none;
 	font-size: 14px;
 	font-weight: bold;
+}
+.head div{
+	background: #415378;
+	color: white;
+	font-size: 20px;
+	height: 32px;
+}
+.manually-list-info{
+	float: left;
+	margin-left: 20px;
+}
+.isCallBed{
+	background: #0be417;
+}
+.notCallBed{
+	background: red;
 }
 </style>

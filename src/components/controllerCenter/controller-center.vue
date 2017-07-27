@@ -1,10 +1,38 @@
 <template>
   <div class="controllerCenter">
-  	<div class="col-md-7">
+  	<div class="controllerSys">
   		<div><span>总共接待：</span><span>50人次</span></div>
     	<div><span>手表叫班响应率：</span><span v-text="">98%</span></div>
     	<div><span>出发及时率：</span><span v-text="">100%</span></div>
     	<div><span>设定提前叫班时间：</span><input v-model="aheadOfTime" />分钟</div>
+  	</div>
+  	<div class="controllerBtn">
+  		<span class="devRegister">设备登记</span>
+  		<span class="getRestOver" @click="getRestOver()">结束间休</span>
+  	</div>
+  	<div class="popup" v-show="getRestOverBedNo">
+  		<div class="head" style="text-align: center;">
+			  <h3></h3>
+				<i class="icon-remove icon-white" @click="cancelRestOverBedNoPage()"></i>			  	
+			</div>
+  		<div class="over-bedNo">
+  			<span>铺位号：</span>
+  			<input type="text" id="restOverBedNo" class="input-over-bedNo" v-if="!controllerPopup" v-model="bedNo" />
+  		</div>
+  		<div class="popup restOverPopup" v-if="controllerPopup">
+			  <div class="popup-left">
+			  	<div>接续车次：<span v-text="restOverVo.trainNo"></span></div>
+			  	<div>司机：<span v-text="restOverVo.driverName"></span></div>
+			  	<div>开车时间：<span v-text="restOverVo.trainDt"></span></div>
+			  	<div>叫班时间：<span v-text="restOverVo.remindPlanedTime1"></span></div>
+			  	<div>铺位号：<span id="bedNo" type="text" v-text="restOverVo.bedNo"></span></div>
+			  	<div class="prompt">请扫描二维码!</span></div>
+			  	<div class="prompt" v-text="qrMsg"></div>
+			  </div>
+			  <div class="popup-right">
+			  	<qriously :value="restOverScan" :size="200" />
+				</div>
+		  </div>
   	</div>
     <div>
     	<span>当日已结束</span>
@@ -34,7 +62,7 @@
 		        </thead>
 		        <tbody>
 		          <tr v-for="(completed,$index) in con.completedList">
-		            <td><div style="max-width:60px" v-text="completed.$index"></div>1</td>
+		            <td><div style="max-width:60px" v-text="$index+1"></div></td>
 		            <td><div style="min-width:95px" v-text="completed.trainNo"></div></td>
 		            <td><div style="min-width:95px" v-text="completed.driverName"></div></td>
 		            <td><div style="min-width:125px" v-text="completed.startTime"></div></td>
@@ -47,7 +75,7 @@
 		        </tbody>
 		    </table>
 			</div>
-			<span>当日已安排：未结束</span>
+			<!--<span>当日已安排：未结束</span>
 			<div class="callBedTable">
 		    <table style="width: 100%" class="table-hover">
 		        <colgroup>
@@ -78,19 +106,18 @@
 		            <td><div style="min-width:185px" v-text="notFinished.remindPlanedTime1"></div></td>
 		            <td>
 		                <div style="max-width:120px">
-		                    <qr startUrl="/static/qr.json" type="restOver" url="/static/qr.json" buttonSpan="结束"></qr>
+		                    <qr type="restOver" url="/static/qr.json" buttonSpan="结束"></qr>
 		                </div>
 		            </td>
 		          </tr>
 		        </tbody>
 		    </table>
-			</div>
-			<span>当日未安排</span><button type="button" class="callBedButton" @click="addTrainNumber">临时增加</button>
+			</div>-->
+			<span>当日未安排</span><button type="button" class="callBedButton" @click="addnotArrangedList()">临时增加</button>
 			<div class="callBedTable">
 		    <table style="width: 100%" class="table-hover">
 		        <colgroup>
 		            <col style="width:60px">
-		            <col/>
 		            <col/>
 		            <col/>
 		            <col/>
@@ -102,19 +129,18 @@
 		            <th>车次</th>
 		            <th>司机</th>
 		            <th>开车时间</th>
-		            <th>铺位号</th>
 		            <th>叫班时间</th>
 		            <th></th>
 		        </thead>
 		        <tbody>
 		          <tr v-for="(notArranged,$index) in con.notArrangedList">
-		            <td><input type="text" style="max-width:60px" v-model="notArranged.$index" /></td>
+		            <td><div type="text" style="max-width:60px" v-text="$index+1"></div></td>
 		            <td><input type="text" style="min-width:135px" v-model="notArranged.trainNo" /></td>
 		            <td><input type="text" style="min-width:135px" v-model="notArranged.driverName" /></td>
 		            <td><input type="text" style="min-width:185px" v-model="notArranged.trainDt" /></td>
-		            <td><select name="" style="min-width:135px" v-model="notArranged.bedNo">
+		            <!--<td><select name="" style="min-width:135px" v-model="notArranged.bedNo">
 		            	<option v-for="bedNo in con.bedNos">{{ bedNo }}</option>
-		            </select></td>
+		            </select></td>-->
 		            <td><input type="text" style="min-width:185px" v-model="notArranged.remindPlanedTime1" /></td>
 		            <td>
 		                <div style="max-width:120px">
@@ -141,6 +167,12 @@ export default {
   data () {
     return {
       aheadOfTime: 50,
+      controllerPopup: false,
+      getRestOverBedNo: false,
+      bedNo:　'',
+      restOverScan: '',
+      restOverVo: {},
+      qrMsg: '',
       con: new Object
     }
   },
@@ -152,14 +184,29 @@ export default {
 	      	this.fetchData ();
 	      },50000000)
     });
+    let self = this;
+			document.onkeydown = function(evt) {
+				var key;
+				if(window.event) {// IE/Chrome/Opera(新版本)
+					key = evt.keyCode;
+				}
+				else if(evt.which){ // Netscape/Firefox/Opera/Chrome/IE（新版本）
+				  key = evt.which;
+				}
+			  if(key === 13 && self.getRestOverBedNo && !self.controllerPopup && self.bedNo){
+					self.restOverInterval = setInterval(()=>{
+			    	self.restOver();
+			    },200)
+			  }
+			}
   },
   methods: {
   	fetchData () {
-    	var self = this;
+    	let self = this;
 	    return axios({
 				  method: 'get',
 				  url: '/static/controllerLeft.json',
-//				  url: 'http://localhost:9180/app/time',
+//				url: 'http://localhost:9180/app/time',
 				  headers: {'appType': 'web','appid': 'logan'}
 				})
 	      .then( (response) => {
@@ -170,6 +217,58 @@ export default {
 	      }).catch( (error) => {
 	        alert("网络连接失败")
 	      })
+	  },
+	  getRestOver () {//点击结束间休，弹出弹出框
+	  	this.getRestOverBedNo = true;
+	  	this.setFocu("restOverBedNo")
+	  },
+	  setFocu(id) {
+	  	setTimeout(()=>{
+	  		document.getElementById(id).focus();
+	  	},500)
+	  },
+	  cancelRestOverBedNoPage() {//结束间休弹出框关闭
+	  	this.restOverVo = {};
+	  	this.getRestOverBedNo = false;
+	  	this.controllerPopup = false;
+	  	clearInterval(this.restOverInterval)
+	  },
+	  restOver() {//接口02，判断退勤是否结束以及接受退勤信息
+	  	let self = this; 
+			return axios({
+				method: 'get',
+				url: '/static/qr.json',
+//			data: this.bedNo,
+				headers: {'appType': 'web','appid': 'logan'}
+			 }).then( (response) => {
+			  var data = response.data;
+			  if (data.type === 1) {
+			    self.restOverVo = data.result;
+			    self.controllerPopup = true;
+			    if(!self.restOverScan){
+			    	self.restOverScan = JSON.stringify(data.result);
+			    };
+			    if (self.restOverVo.status == 3){
+			    	self.qrMsg = '扫描成功！间休结束';
+			    	self.cancelRestOverBedNoPage()
+			    };
+			  }
+		  }).catch( (error) => {
+			  self.restOverVo.trainNo = '网络链接失败';
+			})
+	  },
+	  addnotArrangedList() {
+	  	let notArranged = {
+        "sid": "",
+        "status": "",
+        "remindPlanedTime1": "",
+        "trainNo": "",
+        "driverName":"",
+        "trainDt": "",
+        "startTime": "",
+        "bedNo": ""
+    	}
+	  	this.con.notArrangedList.push(notArranged);
 	  }
   }
 }
@@ -179,7 +278,7 @@ export default {
 	display: inline-block;
 	width: 65%;
 }
-.controllerCenter .col-md-7 div{
+.controllerCenter .controllerSys div{
 	display: inline-block;
 	margin: 10px 100px 10px 0;
 }
@@ -194,8 +293,7 @@ export default {
 .callBedTable{
 	text-align: center;
 	line-height: 26px;
-	width: 65%;
-	margin-bottom: 25px;
+	padding-bottom: 25px;
 }
 .callBedTable tr:hover{
 	background: #e9e9e9;
@@ -222,5 +320,39 @@ export default {
   width: 115px;
   background-color: #7b93f6;
   color: white;
+}
+/*.controllerBtn{
+	text-align: center;
+}*/
+.controllerBtn span{
+	display: inline-block;
+	width: 200px;
+	height: 50px;
+	font-size: 20px;
+	font-weight: bold;
+	cursor: pointer;
+	font-family: cursive;
+	color: #fff;
+	line-height: 50px;
+	text-align: center;
+}
+.devRegister{
+	background: #61b834;
+}
+.getRestOver{
+	background: #006DCC;
+}
+.over-bedNo{
+	position: relative;
+	top: 100px;
+	text-align: center;
+}
+.input-over-bedNo{
+	width: 100px !important;
+	font-size: 22px !important;
+}
+.restOverPopup{
+	left: 0px !important;
+	top: 22px !important;
 }
 </style>
