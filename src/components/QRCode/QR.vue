@@ -12,8 +12,8 @@
 		  	<div>司机：<span v-text="qrVo.driverName"></span></div>
 		  	<div>开车时间：<span v-text="qrVo.trainDt"></span></div>
 		  	<div>叫班时间：<span v-text="qrVo.remindPlanedTime1"></span></div>
-		  	<div>铺位号：<input id="bedNo" type="text" v-text="qrVo.bedNo" /></div>
-		  	<div class="prompt">请扫描二维码!</span></div>
+		  	<div>铺位号：<input id="bedNo" type="text" v-model="qrVo.bedNo" style="width: 55px;"/></div>
+		  	<div class="prompt" v-if="qr">请扫描二维码!</span></div>
 		  	<div class="prompt" v-text="qrMsg"></div>
 		  </div>
 		  <div v-if="qr" class="popup-right">
@@ -39,10 +39,13 @@ export default {
       qrScon: ''
 		}
   },
+  props: ['startUrl','url','buttonSpan','type','params','startRest'],
+  watch: {
+    startRest: 'setRestStartInfo'
+  },
   mounted () {
   	this.$nextTick(() => {
 //		var self = this
-//			document.getElementById("bedNo").focus();
 //
 //			document.onkeydown = function(evt) {
 //				var key;
@@ -57,30 +60,19 @@ export default {
 //				}
 //			}
     });
-   		var self = this
-			document.getElementById("bedNo").focus();
-
-			document.onkeydown = function(evt) {
-				var key;
-				if(window.event) {// IE/Chrome/Opera(新版本)
-				 	key = evt.keyCode;
-				}
-				else if(evt.which){ // Netscape/Firefox/Opera/Chrome/IE（新版本）
-					key = evt.which;
-				}
-				if(key == 13 && self.qrVo.bedNo &&　self.popup){
-					self.setRestStartInfo();
-				}
-			}
   },
-  props: ['startUrl','url','buttonSpan','type','params'],
   methods: {
   	qrBtn (){
+  		this.qr = false;
   		this.popup = true;
   		if (this.type === 'restStart') {
 			  this.qrVo = this.params;
-			  this.setRestStartInfo();
+			  this.qrScan = '';
 			  let self = this;
+			  this.qrVo.bedNo = '';
+			  setTimeout(function(){
+			  	document.getElementById("bedNo").focus();
+			  },500);
 		  } else if (this.type == 'restOver') {
 				var restOverInterval = setInterval(()=>{
 					this.getQrInfo ();
@@ -97,7 +89,8 @@ export default {
 		setRestStartInfo() {//01接口
 			this.qr = true;
 			let self = this;
-			return axios({
+			if(this.qrVo.bedNo &&　this.popup) {
+				return axios({
 					method: 'get',
 //				method: 'post',
 					url: this.startUrl,
@@ -107,10 +100,11 @@ export default {
 			    var data = response.data;
 			    if (data.type === 1) {
 			      self.qrVo = data.result;
+			      self.qrVo.driverName = this.utf16to8(self.qrVo.driverName);
 			      self.qrScan = JSON.stringify(data.result);
 			      self.restStartInterval = setInterval(()=>{
 							self.getQrInfo ();
-							if(self.qrVo.status == '2') {
+							if(self.qrVo.status === 2) {
 								self.qrMsg = '设备发放成功';
 								setTimeout(()=> {
 									self.cancelEdit();
@@ -122,6 +116,7 @@ export default {
 			  }).catch( (error) => {
 			    this.qrVo.trainNo = '网络链接失败';
 			  })
+			}
 		},
 		getQrInfo () {//02接口
 			let self = this; 
@@ -151,8 +146,24 @@ export default {
 			this.qr = false;
 			this.qrMsg = '';
 		},
-		startRest() {
-			
+		utf16to8(str) {
+		  var out, i, len, c;
+		  out = "";
+		  len = str.length;
+		  for(i = 0; i < len; i++) {
+			c = str.charCodeAt(i);
+			if ((c >= 0x0001) && (c <= 0x007F)) {
+			    out += str.charAt(i);
+			} else if (c > 0x07FF) {
+			    out += String.fromCharCode(0xE0 | ((c >> 12) & 0x0F));
+			    out += String.fromCharCode(0x80 | ((c >>  6) & 0x3F));
+			    out += String.fromCharCode(0x80 | ((c >>  0) & 0x3F));
+			} else {
+			    out += String.fromCharCode(0xC0 | ((c >>  6) & 0x1F));
+			    out += String.fromCharCode(0x80 | ((c >>  0) & 0x3F));
+				}
+		  }
+		  return out;
 		}
   }
 }
@@ -228,10 +239,11 @@ export default {
 	font-size: 18px;
 	font-weight: bold;
 }
-button{
+.btn-md{
 	width: 100px;
 	height: 32px;
 	margin: 10px;
+	border-radius: 5px;
 	background: #5bc0de;
 }
 </style>

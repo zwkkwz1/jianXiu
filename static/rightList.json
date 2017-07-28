@@ -2,21 +2,32 @@
     "type":1,
     "msg":"",
     "result":{
+    	"singAndDance":false,
         "manuallyList":[
             {
                 "trainNo":"G201",
-                "driverName":"张三",
+                "driverName":"王五",
                 "bedNo":"101",
-                "remindPlanedTime":"09:30",
+                "remindPlanedTime":"11:30",
                 "remindTimes":2,
+                "timeGoingOn": "15",
                 "remindResponse":true
+            },
+            {
+                "trainNo":"G321",
+                "driverName":"李四",
+                "bedNo":"201",
+                "remindPlanedTime":"11:31",
+                "remindTimes":2,
+                "timeGoingOn": "16",
+                "remindResponse":false
             }
         ],
         "autoList":[
             {
-                "trainNo":"G301",
-                "driverName":"李四",
-                "remindRealTime":"11:30",
+                "trainNo":"G4101",
+                "driverName":"王五",
+                "remindRealTime":"10:00",
                 "remindTimes":1,
                 "remindResponse":true
             }

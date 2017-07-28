@@ -1,7 +1,7 @@
 <template>
   <div id="app">
   	<div class="app-title">
-  		<!--<img src="./img/SHTLJ.jpg" alt="" /><-->
+  		<!--<img src="./assets/logo.png" alt="" />-->
   		<span class="homeName" v-text="homeName"></span>
   		<span class="app-time" v-html="currentdate">
   		</span>
@@ -18,21 +18,24 @@
 		  	<i class="headNavLine"></i>
 		  	<router-link to=""></router-link>
 		  	<i class="headNavLine"></i>
-		  	<router-link to=""></router-link>
+		  	<router-link to="/sys">
+		  		<span>系统设置</span>
+		  	</router-link>
 	  	</nav>
 	  </div>
-  	<div style="margin: 140px 30px 0 30px;width: 65%;display: inline-block;">
+  	<div style="margin: 90px 30px 0 30px;width: 65%;display: inline-block;">
   		<router-view></router-view>
   	</div>
-  	<div class="callBedTable" style="width: 30%;display: inline-block;border: 1px solid;">
-  		<div>
+  	<div class="callBedTable mainTable">
+  		<div class="rightList">
   			<div class="head" style="text-align: center;">
 			  	<div>人工待叫列表</div>		  	
 			  </div>
   			<div class="manually-list-info">
   				<span v-text="manuallyListLength"></span>人需人工叫班
+  				<span v-html="singAndDanceHtml"></span>
   			</div>
-  			<div>
+  			<div style="margin-bottom: 20px;">
   				<table style="width: 95%;margin: 0 13px;" class="table-hover">
 		        <colgroup>
 		            <col style="width:60px">
@@ -60,21 +63,21 @@
 		            <td><div style="min-width:95px" v-text="manually.remindPlanedTime"></div></td>
 		            <td><div style="min-width:75px" v-text="manually.driverName"></div></td>
 		            <td><div style="min-width:75px" v-text="manually.bedNo"></div></td>
-		            <td><div style="min-width:95px">{{manually.remindTimes + ' ' + manually.time}}</div></td>
+		            <td><div style="min-width:95px"><span class="manually-time">{{manually.remindTimes + '次'}}</span>{{manually.timeGoingOn | forMatTime}}</div></td>
 		            <td><div style="min-width:40px">{{manually.remindResponse?'有':'无'}}</div></td>
 		          </tr>
 		        </tbody>
 		      </table>
   			</div>
   		</div>
-  		<div>
+  		<div class="rightList">
   			<div class="head" style="text-align: center;">
 			  	<div>自动叫醒记录</div>		  	
 			  </div>
   			<div class="manually-list-info">
   				<span v-text="autoListLength"></span>人手表一震动，暂不需要干预
   			</div>
-  			<div v-for="auto in rightList.autoList">
+  			<div style="margin-left: 20px;" v-for="auto in rightList.autoList">
   				<span>
   					{{auto.trainNo + "叫班时间  " + auto.remindRealTime + " 已过"}}
   				</span>
@@ -94,20 +97,29 @@ export default {
   		homeName:"上 海 铁 路 局",
   		currentdate : '',
   		autoListLength: '',
+  		singAndDanceHtml: '',
+  		singTime: 0,
+  		singInterval: 33000,
   		rightList: {}
   	}
   },
   filters : {
-		
+		forMatTime: function(value) {
+			let minute = parseInt(value/60);
+			if (parseInt(value/60) < 10) {
+				minute = '0' + minute;
+			}
+			return minute + ':' + value%60;
+		}
   },
   mounted () {
   	this.$nextTick(function () {
 			setInterval(()=>{
   	 		this.getRightList ();
-  		},1000);
+  		},5000);
     });
     setInterval(()=>{
-  	 this.filterTime ();
+  	  this.filterTime ();
   	},1000);
   },
   methods: {
@@ -125,8 +137,15 @@ export default {
             + "<div>" + date.getHours() + ":" + date.getMinutes()
             + ":" + date.getSeconds() + "</div>";
     },
+    filters:{
+    	forMatTime: function(value){
+    		return value%60 + ":" + value/60;
+    	}
+    },
     getRightList() {//获取控制中心右侧列表信息，接口12
+    	this.rightList = {};
     	let self = this;
+    	clearInterval(this.timeGoingInterval);
    		return axios({
 				method: 'get',
 				url: '/static/rightList.json',
@@ -137,11 +156,27 @@ export default {
 	      if (data.type === 1) {
 	      	self.rightList = data.result;
 	      	self.manuallyListLength = self.rightList.manuallyList.length;
-	      	self.rightList.manuallyList.time = 0;
+	      	self.timeGoingInterval = setInterval(()=>{
+	      		let manuallyList = self.rightList.manuallyList;
+			  	  for (let i = 0; i < manuallyList.length; i++) {
+			  	  	manuallyList[i].timeGoingOn++;
+			  	  }
+			  	},1000);
+			  	let nowData = new Date();
+			  	nowData = nowData.getTime();
+			  	if (self.rightList.singAndDance){
+			  		if (nowData - self.singTime > self.singInterval) {
+				  		self.singTime = nowData;
+				  		self.singAndDanceHtml = '<video style="display: none" controls="" autoplay="" name="media"><source src="/static/callbed.mp3" type="audio/mpeg"></video>';
+				  		setTimeout (()=>{
+				  			self.singAndDanceHtml = ''
+				  		},self.singInterval)
+			  		}
+			  	}
 	      	self.autoListLength = self.rightList.autoList.length;
 	      }
 	    }).catch( (error) => {
-	      alert("右侧列表数据获取失败")
+	      console.log("右侧列表数据获取失败")
 	    })
     }
   }
@@ -166,7 +201,7 @@ ul{
 .app-title{
 	width: 100%;
 	height: 66px;
-	position: fixed;
+	position: relative;
 	top: 0;
 	background-image: linear-gradient(to top, #39496a, #4a5f89);
 	color: white;
@@ -234,7 +269,6 @@ a:active {
 	height: 32px;
 }
 .manually-list-info{
-	float: left;
 	margin-left: 20px;
 }
 .isCallBed{
@@ -242,5 +276,22 @@ a:active {
 }
 .notCallBed{
 	background: red;
+}
+.rightList{
+	margin-bottom: 20px;
+	border: 1px solid #039;
+}
+.manually-time{
+	display: inline-block;
+	margin-right: 5px;
+}
+.mainTable{
+	width: 30%;
+	display: inline-block;
+	position: absolute;
+	top: 300px;
+}
+.btn-md{
+	border-radius: 5px;
 }
 </style>
