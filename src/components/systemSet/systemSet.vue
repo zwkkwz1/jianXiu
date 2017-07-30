@@ -21,7 +21,7 @@
 			<input type="text" name="timeToLeave" id="timeToLeave" v-model="sys.timeToLeave" />
 		</div>
 		<div>
-			<span class="btn-lg" @click="setSysInfo">提交</span>
+			<span class="btn-lg btn-success" @click="setSysInfo">提交</span>
 		</div>
 	</div>
 </template>
@@ -87,24 +87,5 @@
 		display: inline-block;
 		width: 30%;
 		margin: 10px 0;
-	}
-	.sys div input{
-		width: 90px;
-		height: 25px;
-		font-size: 18px;
-		text-align: center;
-		border-radius: 3px;
-	}
-	.btn-lg{
-		display: inline-block;
-    	height: 30px;
-    	width: 150px;
-    	border-radius: 5px;
-   		border: 1px solid;
-    	text-align: center;
-    	line-height: 30px;
-    	background: #5cb85c;
-    	cursor: pointer;
-    	color: #fff;
 	}
 </style>

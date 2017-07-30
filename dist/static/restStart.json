@@ -1,0 +1,14 @@
+{
+    "type": 1,
+    "msg": "",
+    "result": {
+        "sid": 123,
+        "status": 1,
+        "remindPlanedTime1": "16:00",
+        "trainNo": "G1234",
+        "driverName":"三",
+        "trainDt": "16:50",
+        "startTime": "14:55",
+        "bedNo": "102-02"
+    }
+}

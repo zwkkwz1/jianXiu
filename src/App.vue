@@ -10,7 +10,7 @@
 		  		<span>控制中心</span>
 		  	</router-link>
 		  	<i class="headNavLine"></i>
-		  	<router-link to="">
+		  	<router-link to="/trainPlan">
 		  		<span>计划维护</span>
 		  	</router-link>
 		  	<i class="headNavLine"></i>
@@ -23,7 +23,7 @@
 		  	</router-link>
 	  	</nav>
 	  </div>
-  	<div style="margin: 90px 30px 0 30px;width: 65%;display: inline-block;">
+  	<div class="callBed" style="margin: 90px 30px 0 30px;width: 65%;display: inline-block;">
   		<router-view></router-view>
   	</div>
   	<div class="callBedTable mainTable">
@@ -98,6 +98,7 @@ export default {
   		currentdate : '',
   		autoListLength: '',
   		singAndDanceHtml: '',
+  		manuallyListLength: '',
   		singTime: 0,
   		singInterval: 33000,
   		rightList: {}
@@ -114,9 +115,10 @@ export default {
   },
   mounted () {
   	this.$nextTick(function () {
-			setInterval(()=>{
+		setInterval(()=>{
   	 		this.getRightList ();
   		},5000);
+  		this.getRightList();
     });
     setInterval(()=>{
   	  this.filterTime ();
@@ -293,5 +295,46 @@ a:active {
 }
 .btn-md{
 	border-radius: 5px;
+}
+.callBed div input{
+	width: 90px;
+	height: 25px;
+	font-size: 18px;
+	text-align: center;
+	border-radius: 3px;
+}
+.btn-lg{
+	display: inline-block;
+    height: 30px;
+    width: 150px;
+    border-radius: 5px;
+   	border: 1px solid;
+    text-align: center;
+    line-height: 30px;
+    cursor: pointer;
+    color: #fff;
+}
+.btn-sm{
+	display: inline-block;
+    height: 26px;
+    width: 38%;
+    border-radius: 5px;
+   	border: 1px solid;
+    text-align: center;
+    line-height: 26px;
+    cursor: pointer;
+    color: #fff;
+}
+.btn-info{
+	background-color: #5bc0de;
+    border-color: #46b8da;
+}
+.btn-success{
+	background-color: #5cb85c;
+    border-color: #5cb85c;
+}
+.btn-table{
+	height: 23px;
+	line-height: 26px;
 }
 </style>

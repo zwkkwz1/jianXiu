@@ -401,6 +401,7 @@ export default {
 }
 .callBedTable tr td{
 	border: 1px solid #b4caed;
+	padding: 0;
 }
 .callBedTable table thead{
 	background-color: #425574;

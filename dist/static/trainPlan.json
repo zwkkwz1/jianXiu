@@ -1,0 +1,18 @@
+{
+    "type":1,
+    "msg":"",
+    "result": {
+        "list":[
+            {
+                "sid":1,
+                "trainNo":"G201",
+                "trainDt":"10:00"
+            },
+            {
+                "sid":2,
+                "trainNo":"G301",
+                "trainDt":"14:00"
+            }
+        ]
+    }
+}
