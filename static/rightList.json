@@ -8,7 +8,7 @@
                 "trainNo":"G201",
                 "driverName":"王五",
                 "bedNo":"101",
-                "remindPlanedTime":"11:30",
+                "remindPlanedTime":"2017-11-11 11:30:00",
                 "remindTimes":2,
                 "timeGoingOn": "15",
                 "remindResponse":true
@@ -17,7 +17,7 @@
                 "trainNo":"G321",
                 "driverName":"李四",
                 "bedNo":"201",
-                "remindPlanedTime":"11:31",
+                "remindPlanedTime":"2017-11-11 11:31:00",
                 "remindTimes":2,
                 "timeGoingOn": "16",
                 "remindResponse":false
@@ -27,7 +27,7 @@
             {
                 "trainNo":"G4101",
                 "driverName":"王五",
-                "remindRealTime":"10:00",
+                "remindRealTime":"2017-11-11 10:00:00",
                 "remindTimes":1,
                 "remindResponse":true
             }

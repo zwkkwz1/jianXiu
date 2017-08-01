@@ -56,9 +56,7 @@
 	  data () {
 	  	return {
 	  	  tp: {},
-	  	  tpVo: {
-	  	  	delFlag: 0
-	  	  }
+	  	  tpVo: {}
 	  	}
 	  },
 	  mounted () {

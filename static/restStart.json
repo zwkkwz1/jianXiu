@@ -4,10 +4,10 @@
     "result": {
         "sid": 123,
         "status": 1,
-        "remindPlanedTime1": "16:00",
+        "remindPlanedTime1": "2017-07-11 07:30:21",
         "trainNo": "G1234",
         "driverName":"三",
-        "trainDt": "16:50",
+        "trainDt": "2017-07-11 08:10:21",
         "startTime": "14:55",
         "bedNo": "102-02"
     }

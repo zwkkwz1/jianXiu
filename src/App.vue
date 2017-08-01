@@ -6,24 +6,32 @@
   		<span class="app-time" v-html="currentdate">
   		</span>
 	  	<nav>
-		  	<router-link to="/controller">
+		  	<router-link to="/">
 		  		<span>控制中心</span>
 		  	</router-link>
 		  	<i class="headNavLine"></i>
-		  	<router-link to="/trainPlan">
+		  	<router-link to="/dq">
+		  		<span>历史查询</span>
+		  	</router-link>
+		  	<i class="headNavLine"></i>
+		  	<router-link to="/tp">
 		  		<span>计划维护</span>
 		  	</router-link>
 		  	<i class="headNavLine"></i>
-		  	<router-link to=""></router-link>
+		  	<router-link to="/bunkAd">
+		  		<span>铺位管理</span>
+		  	</router-link>
 		  	<i class="headNavLine"></i>
-		  	<router-link to=""></router-link>
+		  	<router-link to="bunkEx">
+		  		<span>铺位看板</span>
+		  	</router-link>
 		  	<i class="headNavLine"></i>
 		  	<router-link to="/sys">
 		  		<span>系统设置</span>
 		  	</router-link>
 	  	</nav>
 	  </div>
-  	<div class="callBed" style="margin: 90px 30px 0 30px;width: 65%;display: inline-block;">
+  	<div class="callBunk" style="margin: 90px 30px 0 30px;width: 65%;display: inline-block;">
   		<router-view></router-view>
   	</div>
   	<div class="callBedTable mainTable">
@@ -58,12 +66,12 @@
 		        <tbody>
 		          <tr v-for="(manually,$index) in rightList.manuallyList" 
 		          	:class="{isCallBed: manually.remindResponse, notCallBed: !manually.remindResponse}">
-		            <td><div style="max-width:60px" v-text="$index+1"></div></td>
+		            <td><div style="min-width:50px" v-text="$index+1"></div></td>
 		            <td><div style="min-width:75px" v-text="manually.trainNo"></div></td>
-		            <td><div style="min-width:95px" v-text="manually.remindPlanedTime"></div></td>
+		            <td><div style="min-width:95px">{{manually.remindPlanedTime | formatTime}}</div></td>
 		            <td><div style="min-width:75px" v-text="manually.driverName"></div></td>
 		            <td><div style="min-width:75px" v-text="manually.bedNo"></div></td>
-		            <td><div style="min-width:95px"><span class="manually-time">{{manually.remindTimes + '次'}}</span>{{manually.timeGoingOn | forMatTime}}</div></td>
+		            <td><div style="min-width:95px"><span class="manually-time">{{manually.remindTimes + '次'}}</span>{{manually.timeGoingOn | remindTime}}</div></td>
 		            <td><div style="min-width:40px">{{manually.remindResponse?'有':'无'}}</div></td>
 		          </tr>
 		        </tbody>
@@ -89,6 +97,9 @@
 </template>
 
 <script>
+	/**
+	 *todo:点击弹出人工叫班接口 
+	 */
 import axios from 'axios'
 export default {
   name: 'app',
@@ -105,7 +116,7 @@ export default {
   	}
   },
   filters : {
-		forMatTime: function(value) {
+		remindTime: function(value) {
 			let minute = parseInt(value/60);
 			if (parseInt(value/60) < 10) {
 				minute = '0' + minute;
@@ -139,18 +150,14 @@ export default {
             + "<div>" + date.getHours() + ":" + date.getMinutes()
             + ":" + date.getSeconds() + "</div>";
     },
-    filters:{
-    	forMatTime: function(value){
-    		return value%60 + ":" + value/60;
-    	}
-    },
     getRightList() {//获取控制中心右侧列表信息，接口12
     	this.rightList = {};
     	let self = this;
     	clearInterval(this.timeGoingInterval);
    		return axios({
 				method: 'get',
-				url: '/static/rightList.json',
+//				url: '/static/rightList.json',
+				url: 'http://localhost:9180/web/right',
 			  headers: {'appType': 'web','appid': 'logan'}
 			})
 	    .then( (response) => {
@@ -169,7 +176,7 @@ export default {
 			  	if (self.rightList.singAndDance){
 			  		if (nowData - self.singTime > self.singInterval) {
 				  		self.singTime = nowData;
-				  		self.singAndDanceHtml = '<video style="display: none" controls="" autoplay="" name="media"><source src="/static/callbed.mp3" type="audio/mpeg"></video>';
+				  		self.singAndDanceHtml = '<video style="display: none" controls="" autoplay="" name="media"><source src="/static/callBunk.mp3" type="audio/mpeg"></video>';
 				  		setTimeout (()=>{
 				  			self.singAndDanceHtml = ''
 				  		},self.singInterval)
@@ -282,6 +289,7 @@ a:active {
 .rightList{
 	margin-bottom: 20px;
 	border: 1px solid #039;
+	min-width: 550px;
 }
 .manually-time{
 	display: inline-block;
@@ -296,7 +304,7 @@ a:active {
 .btn-md{
 	border-radius: 5px;
 }
-.callBed div input{
+.callBunk div input{
 	width: 90px;
 	height: 25px;
 	font-size: 18px;
@@ -317,7 +325,7 @@ a:active {
 .btn-sm{
 	display: inline-block;
     height: 26px;
-    width: 38%;
+    width: 48px;
     border-radius: 5px;
    	border: 1px solid;
     text-align: center;
@@ -327,14 +335,19 @@ a:active {
 }
 .btn-info{
 	background-color: #5bc0de;
-    border-color: #46b8da;
+  border-color: #46b8da;
 }
 .btn-success{
 	background-color: #5cb85c;
-    border-color: #5cb85c;
+  border-color: #5cb85c;
 }
 .btn-table{
 	height: 23px;
 	line-height: 26px;
+}
+.btn-primary{
+	color: #fff;
+	background-color: #337ab7;
+	border-color: #2e6da4;
 }
 </style>

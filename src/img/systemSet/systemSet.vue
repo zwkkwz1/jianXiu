@@ -27,9 +27,6 @@
 </template>
 
 <script>
-	/**
-	 * todo：设定(设定提前叫班时间)修改之后。控制中心的 (设定提前叫班时间)也要改
-	 */
 	import axios from 'axios'
 	export default {
 	  name: 'systemSet',

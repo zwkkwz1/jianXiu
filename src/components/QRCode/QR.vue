@@ -9,10 +9,10 @@
 		  </div>
 		  <div class="popup-left">
 		  	<div>接续车次：<span v-text="qrVo.trainNo"></span></div>
-		  	<div>司机：<span v-text="qrVo.driverName"></span></div>
-		  	<div>开车时间：<span v-text="qrVo.trainDt"></span></div>
-		  	<div>叫班时间：<span v-text="qrVo.remindPlanedTime1"></span></div>
-		  	<div>铺位号：<input id="bedNo" type="text" v-model="qrVo.bedNo" style="width: 55px;"/></div>
+		  	<div>司机：<span v-text="driverName"></span></div>
+		  	<div>开车时间：<span>{{qrVo.trainDt | formatTime}}</span></div>
+		  	<div>叫班时间：<span>{{qrVo.remindPlanedTime1 | formatTime}}</span></div>
+		  	<div>铺位号：<span id="bedNo" type="text" v-text="qrVo.bedNo" style="width: 55px;"></span></div>
 		  	<div class="prompt" v-if="qr">请扫描二维码!</span></div>
 		  	<div class="prompt" v-text="qrMsg"></div>
 		  </div>
@@ -36,75 +36,61 @@ export default {
       codes: '',
       qrVo: {},
       qrMsg: '',
+      driverName: '',
       qrScon: ''
 		}
   },
-  props: ['startUrl','url','buttonSpan','type','params','startRest'],
-  watch: {
-    startRest: 'setRestStartInfo'
-  },
+  props: ['startUrl','url','buttonSpan','type','params'],
   mounted () {
   	this.$nextTick(() => {
-//		var self = this
-//
-//			document.onkeydown = function(evt) {
-//				var key;
-//				if(window.event) {// IE/Chrome/Opera(新版本)
-//				 	key = evt.keyCode;
-//				}
-//				else if(evt.which){ // Netscape/Firefox/Opera/Chrome/IE（新版本）
-//					key = evt.which;
-//				}
-//				if(key == 13 && self.qrVo.bedNo &&　self.popup){
-//					self.setRestStartInfo();
-//				}
-//			}
+			
     });
   },
   methods: {
   	qrBtn (){
   		this.qr = false;
   		this.popup = true;
-  		if (this.type === 'restStart') {
-			  this.qrVo = this.params;
+  		if (this.type === 'restStart') {//开始间休
 			  this.qrScan = '';
-			  let self = this;
-			  this.qrVo.bedNo = '';
-			  setTimeout(function(){
-			  	document.getElementById("bedNo").focus();
-			  },500);
-		  } else if (this.type == 'restOver') {
-				var restOverInterval = setInterval(()=>{
+				setTimeout(()=> {
+					this.setRestStartInfo();
+				},500)
+		  } else if (this.type == 'restOver') {//结束间休
+		  	this.qrScan = '';
+				this.restOverInterval = setInterval(()=>{
+					this.qrVo = this.params;
 					this.getQrInfo ();
 					if (this.qrVo.status == 3) {
 						this.qrMsg = '间休结束';
 						setTimeout(()=> {
 							this.cancelEdit();
 						},2000)
-						clearInterval(restOverInterval)
+						clearInterval(this.restOverInterval)
 					}
 				},1000);
 		  }
 		},
 		setRestStartInfo() {//01接口
-			this.qr = true;
 			let self = this;
-			if(this.qrVo.bedNo &&　this.popup) {
+//			if(this.popup) {
 				return axios({
-					method: 'get',
-//				method: 'post',
+//					method: 'get',
+					method: 'post',
+					data: this.params,
 					url: this.startUrl,
-//				data: this.qrVo,
 					headers: {'appType': 'web','appid': 'logan'}
 			  }).then( (response) => {
 			    var data = response.data;
 			    if (data.type === 1) {
+			    	self.qr = true;
+			    	const name = data.result.driverName;
+			    	self.driverName = name;
 			      self.qrVo = data.result;
-			      self.qrVo.driverName = this.utf16to8(self.qrVo.driverName);
+			      data.result.driverName = this.utf16to8(data.result.driverName);
 			      self.qrScan = JSON.stringify(data.result);
-			      self.restStartInterval = setInterval(()=>{
+			      self.restStartInterval = setInterval(()=>{//不停地访问02接口，询问手机扫码是否完成了
 							self.getQrInfo ();
-							if(self.qrVo.status === 2) {
+							if(self.qrVo.status == 2) {
 								self.qrMsg = '设备发放成功';
 								setTimeout(()=> {
 									self.cancelEdit();
@@ -114,23 +100,27 @@ export default {
 						},500);
 			    }
 			  }).catch( (error) => {
-			    this.qrVo.trainNo = '网络链接失败';
+			    console.log('网络链接失败');
 			  })
-			}
+//			}
 		},
 		getQrInfo () {//02接口
 			let self = this; 
 			return axios({
 					method: 'get',
-//				method: 'post',
 					url: this.url,
-//				data: params,
+					params: {sid: this.qrVo.sid},
 					headers: {'appType': 'web','appid': 'logan'}
 			  }).then( (response) => {
 			    var data = response.data;
 			    if (data.type === 1) {
-			      self.qrVo = data.result;
+			    	self.qr = true;
+			    	if (!self.qrVo){
+			    		self.qrVo = data.result;
+			    	}
+			    	self.qrVo.status = data.result.status;
 			      if(!self.qrScan){
+			      	data.result.driverName = this.utf16to8(data.result.driverName);
 			      	self.qrScan = JSON.stringify(data.result);
 			      }
 			    }
@@ -138,13 +128,15 @@ export default {
 			    self.qrVo.trainNo = '网络链接失败';
 			  })
 		},
-		cancelEdit(){
+		cancelEdit(){//关闭二维码扫描组件
 			clearInterval(this.restStartInterval);
+			clearInterval(this.restOverInterval);
 			this.popup = false;
 			this.qrScan = '';
 			this.qrVo = {};
 			this.qr = false;
 			this.qrMsg = '';
+			this.$emit("qrClose","qrIsClose")
 		},
 		utf16to8(str) {
 		  var out, i, len, c;

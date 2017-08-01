@@ -10,56 +10,60 @@
             {
                 "trainNo":"G201",
                 "driverName":"张三",
-                "trainDt":"09:00",
+                "trainDt":"2017-07-11 09:00:21",
                 "bedNo":"101",
-                "startTime":"07:30",
-                "remindRealTime1":"08:51",
-                "remindRealTime2":"08:56",
-                "adminRemindTime":"09:00",
-                "endRealTime":"09:10",
+                "startTime":"2017-07-11 07:30:21",
+                "remindRealTime1":"2017-07-11 08:51:21",
+                "remindRealTime2":"2017-07-11 08:56:21",
+                "adminRemindTime":"2017-07-11 09:00:21",
+                "endRealTime":"2017-07-11 09:10:21",
                 "mid":"1234567890"
             },
             {
                 "trainNo":"D101",
                 "driverName":"八戒",
-                "trainDt":"10:00",
+                "trainDt":"2017-07-11 10:00:21",
                 "bedNo":"101",
-                "startTime":"07:40",
-                "remindRealTime1":"09:10",
-                "remindRealTime2":"09:15",
-                "adminRemindTime":"09:18",
-                "endRealTime":"13:10",
+                "startTime":"2017-07-11 07:40:21",
+                "remindRealTime1":"2017-07-11 09:10:21",
+                "remindRealTime2":"2017-07-11 09:15:21",
+                "adminRemindTime":"2017-07-11 09:18:21",
+                "endRealTime":"2017-07-11 13:10:21",
                 "mid":"222"
             }
         ],
         "notFinishedList":[
             {
+            	"sid": "1",
                 "trainNo":"G301",
                 "driverName":"李四",
-                "trainDt":"12:20",
+                "trainDt":"2017-07-11 12:20:21",
                 "bedNo":"102",
-                "remindPlanedTime1":"11:30"
+                "remindPlanedTime1":"2017-07-11 11:30:21"
             },
             {
+            	"sid": "2",
                 "trainNo":"G351",
                 "driverName":"王五",
-                "trainDt":"12:21",
+                "trainDt":"2017-07-11 12:21:21",
                 "bedNo":"101",
-                "remindPlanedTime1":"11:31"
+                "remindPlanedTime1":"2017-07-11 11:31:21"
             },
             {
+            	"sid": "3",
                 "trainNo":"G311",
                 "driverName":"李东",
-                "trainDt":"14:20",
+                "trainDt":"2017-07-11 14:20:21",
                 "bedNo":"103",
-                "remindPlanedTime1":"13:30"
+                "remindPlanedTime1":"2017-07-11 13:30:21"
             },
             {
+            	"sid": "4",
                 "trainNo":"G21",
                 "driverName":"陆丰",
-                "trainDt":"15:20",
+                "trainDt":"2017-07-11 15:20:21",
                 "bedNo":"104",
-                "remindPlanedTime1":"14:30"
+                "remindPlanedTime1":"2017-07-11 14:30:21"
             }
         ],
         "notArrangedList":[

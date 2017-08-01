@@ -1,15 +1,10 @@
 <template>
   <div class="controllerCenter">
   	<div class="controllerSys">
-  		<div><span>总共接待：</span><span>50人次</span></div>
-    	<div><span>手表叫班响应率：</span><span v-text="">98%</span></div>
-    	<div><span>出发及时率：</span><span v-text="">100%</span></div>
+  		<div><span>总共接待：</span><span v-text="con.servedDriverNum">人次</span></div>
+    	<div><span>手表叫班响应率：</span><span v-text="con.responseRate"></span></div>
+    	<div><span>出发及时率：</span><span v-text="con.inTimeRate"></span></div>
     	<div><span>设定提前叫班时间：</span><input v-model="aheadOfTime" />分钟</div>
-  	</div>
-  	<div class="controllerBtn">
-  		<span class="devRegister" @click="devCheckIn()">设备登记</span>
-  		<span class="getRestOver" @click="getRestOver()">结束间休</span>
-  		<span class="err-msg" v-text="errMsg"></span>
   	</div>
   	<div class="popup" v-if="checkInPage">
   		<div class="head" style="text-align: center;">
@@ -48,8 +43,11 @@
 		  </div>
   	</div>
     <div>
-    	<span>当日已结束</span>
-    	<div class="callBedTable">
+    	<div>
+    		<span class="con-table-name">当日已结束</span>
+    		<div :class="{hideIcon:!completed,showIcon:completed}" @click="toggleControllerLeftTable('completed')"></div>
+    	</div>
+    	<div class="callBedTable" v-if="completed">
 		    <table style="width: 100%" class="table-hover">
 		        <colgroup>
 		            <col style="width:60px">
@@ -75,21 +73,24 @@
 		        </thead>
 		        <tbody>
 		          <tr v-for="(completed,$index) in con.completedList">
-		            <td><div style="max-width:60px" v-text="$index+1"></div></td>
-		            <td><div style="min-width:95px" v-text="completed.trainNo"></div></td>
-		            <td><div style="min-width:95px" v-text="completed.driverName"></div></td>
-		            <td><div style="min-width:125px" v-text="completed.startTime"></div></td>
-		            <td><div style="min-width:125px" v-text="completed.remindRealTime1"></div></td>
-		            <td><div style="min-width:125px" v-text="completed.remindRealTime2"></div></td>
-		            <td><div style="min-width:125px" v-text="completed.adminRemindTime"></div></td>
-		            <td><div style="min-width:125px" v-text="completed.endRealTime"></div></td>
+		            <td><div style="mix-width:50px" v-text="$index+1"></div></td>
+		            <td><div style="min-width:75px" v-text="completed.trainNo"></div></td>
+		            <td><div style="min-width:75px" v-text="completed.driverName"></div></td>
+		            <td><div style="min-width:125px" :title="completed.startTime">{{completed.startTime | formatTime}}</div></td>
+		            <td><div style="min-width:125px" :title="completed.remindRealTime1"></div>{{completed.remindRealTime1 | formatTime}}</td>
+		            <td><div style="min-width:125px" :title="completed.remindRealTime2">{{completed.remindRealTime2 | formatTime}}</div></td>
+		            <td><div style="min-width:125px" :title="completed.adminRemindTime">{{completed.adminRemindTime | formatTime}}</div></td>
+		            <td><div style="min-width:125px" :title="completed.endRealTime">{{completed.endRealTime | formatTime}}</div></td>
 		            <td><div style="min-width:125px" v-text="completed.mid"></div></td>
 		          </tr>
 		        </tbody>
 		    </table>
 			</div>
-			<span>当日已安排：未结束</span>
-			<div class="callBedTable">
+			<div>
+				<span class="con-table-name">当日已安排：未结束</span>
+				<div :class="{hideIcon:!notFinished,showIcon:notFinished}" @click="toggleControllerLeftTable('notFinished')"></div>
+			</div>
+			<div class="callBedTable" v-if="notFinished">
 		    <table style="width: 100%" class="table-hover">
 		        <colgroup>
 		            <col style="width:60px">
@@ -97,7 +98,7 @@
 		            <col/>
 		            <col/>
 		            <col/>
-		            <!--<col/>-->
+		            <col/>
 		            <col style="width:120px">
 		        </colgroup>
 		        <thead>
@@ -107,30 +108,35 @@
 		            <th>开车时间</th>
 		            <th>铺位号</th>
 		            <th>叫班时间</th>
-		            <!--<th></th>-->
+		            <th></th>
 		        </thead>
 		        <tbody>
 		          <tr v-for="(notFinished,$index) in con.notFinishedList">
-		            <td><div style="max-width:60px" v-text="$index+1"></div></td>
+		            <td><div style="mix-width:50px" v-text="$index+1"></div></td>
 		            <td><div style="min-width:135px" v-text="notFinished.trainNo"></div></td>
 		            <td><div style="min-width:135px" v-text="notFinished.driverName"></div></td>
-		            <td><div style="min-width:185px" v-text="notFinished.trainDt"></div></td>
+		            <td><div style="min-width:185px" :title="notFinished.trainDt">{{notFinished.trainDt | formatTime}}</div></td>
 		            <td><div style="min-width:135px" v-text="notFinished.bedNo"></div></td>
-		            <td><div style="min-width:185px" v-text="notFinished.remindPlanedTime1"></div></td>
-		            <!--<td>
-		                <div style="max-width:120px">
-		                    <qr type="restOver" url="/static/qr.json" buttonSpan="结束"></qr>
-		                </div>
-		            </td>-->
+		            <td><div style="min-width:185px" :title="notFinished.remindPlanedTime1">{{notFinished.remindPlanedTime1 | formatTime}}</div></td>
+		            <td>
+		              <div style="max-width:120px">
+		                <qr type="restOver" url="http://localhost:9180/web/get" :params="notFinished" buttonSpan="结束" @qrClose="fetchData"></qr>
+		              </div>
+		            </td>
 		          </tr>
 		        </tbody>
 		    </table>
 			</div>
-			<span>当日未安排</span><button type="button" class="callBedButton btn-md" @click="addnotArrangedList()">临时增加</button>
-			<div class="callBedTable">
+			<div>
+				<span class="con-table-name">当日未安排</span>
+				<button type="button" class="callBedButton btn-md" @click="addnotArrangedList()">临时增加</button>
+				<div :class="{hideIcon:!notArranged,showIcon:notArranged}" @click="toggleControllerLeftTable('notArranged')"></div>
+			</div>
+			<div class="callBedTable" v-if="notArranged">
 		    <table style="width: 100%" class="table-hover">
 		        <colgroup>
 		            <col style="width:60px">
+		            <col/>
 		            <col/>
 		            <col/>
 		            <col/>
@@ -142,23 +148,24 @@
 		            <th>车次</th>
 		            <th>司机</th>
 		            <th>开车时间</th>
+		            <th>铺位号</th>
 		            <th>叫班时间</th>
 		            <th></th>
 		        </thead>
 		        <tbody>
 		          <tr v-for="(notArranged,$index) in con.notArrangedList">
-		            <td><div type="text" style="max-width:60px" v-text="$index+1"></div></td>
+		            <td><div type="text" style="mix-width:50px" v-text="$index+1"></div></td>
 		            <td><input type="text" style="min-width:135px" v-model="notArranged.trainNo" /></td>
 		            <td><input type="text" style="min-width:135px" v-model="notArranged.driverName" /></td>
 		            <td><input type="text" style="min-width:185px" v-model="notArranged.trainDt" @blur="getRemindPlanedTime1(notArranged,$index)"/></td>
-		            <!--<td><select name="" style="min-width:135px" v-model="notArranged.bedNo">
+		            <td><select name="" style="min-width:135px" v-model="notArranged.bedNo">
 		            	<option v-for="bedNo in con.bedNos">{{ bedNo }}</option>
-		            </select></td>-->
+		            </select></td>
 		            <td><input type="text" style="min-width:185px" v-model="notArranged.remindPlanedTime1" /></td>
 		            <td>
 		                <div style="max-width:120px">
-		                	<qr startUrl="/static/restStart.json" url="/static/qr.json" type="restStart" 
-		                		:params="notArranged" buttonSpan="开始" :startRest="startRest"></qr>
+		                	<qr startUrl="http://localhost:9180/web/createOrUpdate" url="http://localhost:9180/web/get" type="restStart" 
+		                		:params="notArranged" buttonSpan="开始" @qrClose="fetchData"></qr>
 		                </div>
 		            </td>
 		          </tr>
@@ -166,6 +173,11 @@
 		    </table>
 			</div>
     </div>
+    <div class="controllerBtn">
+  		<span class="devRegister" @click="devCheckIn()">设 备 登 记</span>
+  		<!--<span class="getRestOver" @click="getRestOver()">结束间休</span>-->
+  		<span class="err-msg" v-text="errMsg"></span>
+  	</div>
   </div>
 </template>
 
@@ -183,6 +195,9 @@ export default {
       controllerPopup: false,
       getRestOverBedNo: false,
       checkInPage: false,
+      completed: false,
+      notFinished: true,
+      notArranged: true,
       bedNo:　'',
       restOverScan: '',
       restOverVo: {},
@@ -193,39 +208,29 @@ export default {
       con: new Object
     }
   },
+//filters: {  
+//  formatTime: function (value) {
+//    let valueArr = value.split(" ");
+//    let timeArr = valueArr[1].split(":");
+//    return timeArr[0] + ':' + timeArr[1];
+//  } 
+//},
   components: {qr},
   mounted () {
   	this.$nextTick(() => {
       this.fetchData();
-	      setInterval(()=>{
-	      	this.fetchData ();
-	      },50000)
+//	      setInterval(()=>{
+//	      	this.fetchData ();
+//	      },5000)
     });
-    let self = this;
-			document.onkeydown = function(evt) {
-				var key;
-				if(window.event) {// IE/Chrome/Opera(新版本)
-					key = evt.keyCode;
-				}
-				else if(evt.which){ // Netscape/Firefox/Opera/Chrome/IE（新版本）
-				  key = evt.which;
-				}
-			  if(key === 13 && self.getRestOverBedNo && !self.controllerPopup && self.bedNo){
-					self.restOverInterval = setInterval(()=>{
-			    	self.restOver();
-			    },200)
-			  } else if (key === 13){
-			  	self.startRest = !self.startRest
-			  }
-			}
   },
   methods: {
   	fetchData () {
     	let self = this;
 	    return axios({//控制中心左侧接口
 				  method: 'get',
-				  url: '/static/controllerLeft.json',
-//				url: 'http://localhost:9180/app/time',
+//				  url: '/static/controllerLeft.json',
+				  url: 'http://localhost:9180/web/left',
 				  headers: {'appType': 'web','appid': 'logan'}
 				})
 	      .then( (response) => {
@@ -234,24 +239,29 @@ export default {
 	      		self.con = response.result;
 	      		for (let i = 0; i < self.con.notArrangedList.length; i++) {
 	      			self.getRemindPlanedTime1(self.con.notArrangedList[i],i);
+	      			self.con.notArrangedList[i].bedNo = self.con.bedNos[0];//给铺位设置默认值
 	      		}
 	      	}
 	      }).catch( (error) => {
 	        console.log("网络连接失败")
 	      })
 	  },
+	  toggleControllerLeftTable (type) {
+	  	this[type] = !this[type];
+	  },
 	  devCheckIn () {
 	  	this.checkInPage = true;
 	  	let self = this;
 	  	return axios({//21接口，获取设备登记信息
 				  method: 'get',
-				  url: '/static/checkIn.json',
-//				url: 'http://localhost:9180/app/time',
+//				  url: '/static/checkIn.json',
+				  url: 'http://localhost:9180/web/get-register-info',
 				  headers: {'appType': 'web','appid': 'logan'}
 				})
 	      .then( (response) => {
 	      	var response = response.data;
 	      	if (response.type === 1) {
+	      		self.aheadOfTime = response.result.timeout;
 	      		response.result.name = this.utf16to8(response.result.name);
 	      		self.checkInInfo = JSON.stringify(response.result);
 	      	}
@@ -263,10 +273,10 @@ export default {
 	  	this.checkInInfo = '';
 	  	this.checkInPage = false;
 	  },
-	  getRestOver () {//点击结束间休，弹出弹出框
-	  	this.getRestOverBedNo = true;
-	  	this.setFocu("restOverBedNo")
-	  },
+//	  getRestOver () {//点击结束间休，弹出弹出框
+//	  	this.getRestOverBedNo = true;
+//	  	this.setFocu("restOverBedNo")
+//	  },
 	  setFocu(id) {
 	  	setTimeout(()=>{
 	  		document.getElementById(id).focus();
@@ -278,30 +288,30 @@ export default {
 	  	this.controllerPopup = false;
 	  	clearInterval(this.restOverInterval)
 	  },
-	  restOver() {//接口02，判断退勤是否结束以及接受退勤信息
-	  	let self = this; 
-			return axios({
-				method: 'get',
-				url: '/static/qr.json',
-//			data: this.bedNo,
-				headers: {'appType': 'web','appid': 'logan'}
-			 }).then( (response) => {
-			  var data = response.data;
-			  if (data.type === 1) {
-			    self.restOverVo = data.result;
-			    self.controllerPopup = true;
-			    if(!self.restOverScan){
-			    	self.restOverScan = JSON.stringify(data.result);
-			    };
-			    if (self.restOverVo.status == 3){
-			    	self.qrMsg = '扫描成功！间休结束';
-			    	self.cancelRestOverBedNoPage()
-			    };
-			  }
-		  }).catch( (error) => {
-			  self.restOverVo.trainNo = '网络链接失败';
-			})
-	  },
+//	  restOver() {//接口02，判断退勤是否结束以及接受退勤信息
+//	  	let self = this; 
+//			return axios({
+//				method: 'get',
+//				url: '/static/qr.json',
+////			data: this.bedNo,
+//				headers: {'appType': 'web','appid': 'logan'}
+//			 }).then( (response) => {
+//			  var data = response.data;
+//			  if (data.type === 1) {
+//			    self.restOverVo = data.result;
+//			    self.controllerPopup = true;
+//			    if(!self.restOverScan){
+//			    	self.restOverScan = JSON.stringify(data.result);
+//			    };
+//			    if (self.restOverVo.status == 3){
+//			    	self.qrMsg = '扫描成功！间休结束';
+//			    	self.cancelRestOverBedNoPage()
+//			    };
+//			  }
+//		  }).catch( (error) => {
+//			  self.restOverVo.trainNo = '网络链接失败';
+//			})
+//	  },
 	  addnotArrangedList() {
 	  	let notArranged = {
         "sid": "",
@@ -421,17 +431,15 @@ export default {
   background-color: #7b93f6;
   color: white;
 }
-/*.controllerBtn{
-	text-align: center;
-}*/
+.controllerBtn{
+	margin-bottom: 40px;
+}
 .controllerBtn span{
 	display: inline-block;
 	width: 200px;
 	height: 50px;
-	font-size: 20px;
-	font-weight: bold;
+	font-size: 26px;
 	cursor: pointer;
-	font-family: cursive;
 	color: #fff;
 	line-height: 50px;
 	text-align: center;
@@ -454,5 +462,27 @@ export default {
 .restOverPopup{
 	left: 0px !important;
 	top: 22px !important;
+}
+.hideIcon{
+	background-image: url(../../img/opened.png);
+}
+.showIcon{
+	background-image: url(../../img/closed.png);
+}
+.hideIcon,.showIcon{
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	cursor: pointer;
+	position: relative;
+  top: 3px;
+}
+.con-table-name{
+	font-size: 22px;
+  margin: 10px 0;
+  display: inline-block;
+}
+select{
+	text-align: center;
 }
 </style>

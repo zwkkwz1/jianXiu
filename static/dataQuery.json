@@ -1,0 +1,35 @@
+{
+    "type":1,
+    "msg":"",
+    "result":{
+        "servedDriverNum":590,
+        "responseRate":0.98,
+        "inTimeRate":0.99,
+        "completedList":[
+            {
+                "trainNo":"G201",
+                "driverName":"张三",
+                "trainDt":"2017-07-11 09:00:21",
+                "bedNo":"101",
+                "startTime":"2017-07-11 07:30:21",
+                "remindRealTime1":"2017-07-11 08:51:21",
+                "remindRealTime2":"2017-07-11 08:56:21",
+                "adminRemindTime":"2017-07-11 09:00:21",
+                "endRealTime":"2017-07-11 09:10:21",
+                "mid":"1234567890"
+            },
+            {
+                "trainNo":"D101",
+                "driverName":"八戒",
+                "trainDt":"2017-07-11 10:00:21",
+                "bedNo":"101",
+                "startTime":"2017-07-11 07:40:21",
+                "remindRealTime1":"2017-07-11 09:10:21",
+                "remindRealTime2":"2017-07-11 09:15:21",
+                "adminRemindTime":"2017-07-11 09:18:21",
+                "endRealTime":"2017-07-11 13:10:21",
+                "mid":"222"
+            }
+        ]
+    }
+}
