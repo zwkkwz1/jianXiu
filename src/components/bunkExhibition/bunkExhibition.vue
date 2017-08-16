@@ -1,5 +1,5 @@
 <template>
-	<ul class="bunkList">
+	<ul class="bunkList" style="margin-top: 20px;">
 		<li class="bunk" v-for="(bunk,$index) in bunkList" :class="{taboo:bunk.used,access:!bunk.used}">
 			<div v-text="bunk.bedNo"></div>
 			<div v-text="bunk.driverName"></div>
@@ -13,10 +13,12 @@
 
 <script>
 	import axios from 'axios'
+	import config from '@/config'
 	export default {
 	  name: 'bunkEx',
 	  data () {
 	  	return {
+	  	  host: config.host,
 	  	  bunkList: {}
 	  	}
 	  },
@@ -30,7 +32,8 @@
 	  	  let self = this;
 	  	  return axios({
 	  	  	method: 'get',
-	  	  	url: '/static/bunkEx.json',
+//	  	  	url: '/static/bunkEx.json',
+	  	  	url: this.host + '/web/bedInfos',
 	  	  	headers: {'appType': 'web','appid': 'logan'}
 	  	  })
 	  	  .then( (response) => {
@@ -54,7 +57,8 @@
 	.bunk{
 		display: inline-block;
 		height: 80px;
-		width: 180px;
+		width: 150px;
+		margin-left: 10px;
 		border: 1px solid;
 		line-height: 80px;
 		text-align: center;
@@ -63,16 +67,16 @@
 		transition: all 0.5s ease-out; 
 	}
 	.taboo{
-		background: red;
+		background: #f08d3c;
 	}
 	.taboo:hover{
-		background: rgba(255, 0, 0, 0.5);
+		background: #e6a570;
 	}
 	.access{
-		background: #06C;
+		background: #097796;
 	}
 	.access:hover{
-		background: rgba(0, 102, 204, 0.5);
+		background: #0e98c1;
 	}
 	.bunk div{
 		font-size: 16px;

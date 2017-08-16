@@ -13,32 +13,32 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'controllerCenter',
+      name: '控制中心',
       component: controllerCenter
     },
     {
       path: '/sys',
-      name: 'sys',
+      name: '系统设置',
       component : systemSet
     },
     {
       path: '/tp',
-      name: 'tp',
+      name: '计划维护',
       component : trainPlan
     },
     {
       path: '/bunkAd',
-      name: 'bunkAdmin',
+      name: '铺位管理',
       component : bunkAdmin
     },
     {
       path: '/bunkEx',
-      name: 'bunkExhibition',
+      name: '铺位看板',
       component : bunkExhibition
     },
     {
       path: '/dq',
-      name: 'dataQuery',
+      name: '历史查询',
       component : dataQuery
     }
   ]

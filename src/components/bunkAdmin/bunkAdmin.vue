@@ -1,30 +1,15 @@
 <template>
 	<div>
 		<div class="callBedTable" style="padding-bottom: 0;margin-top: 40px;">
-			<table style="width: 25%" class="table-hover">
-				<colgroup>
-					<col style="width:60px">
-					<col/>
-					<col style="width:120px">
-				</colgroup>
-				<thead>
-					<th>序号</th>
-					<th>铺位号</th>
-					<th></th>
-				</thead>
-				<tbody>
-					<tr v-for="(bunk,$index) in bunkList">
-						<td><div style="min-width:50px" v-text="$index+1"></div></td>
-						<td><input type="text" style="min-width:185px" v-model="bunk.bedNo" /></td>
-						<td>
-							<div style="max-width:80px">
-								<img src="../../img/delete.png" class="deleteBunk" @click="deletTP(bunk,$index)" onerror="javascript:this.src='https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1496385415687&di=cfb8c3b6a69be436172b2fbcf2d35748&imgtype=0&src=http%3A%2F%2Fpic.58pic.com%2F58pic%2F15%2F55%2F73%2F39I58PICCqK_1024.png'">
-							</div>
-						</td>
-					</tr>
-				</tbody>
-			</table>
+			<div class="bunk-revise" v-for="(bunk,$index) in bunkList">
+				<input type="text" v-model="bunk.bedNo" style="width: 120px;"/>
+				<div>
+					<i class="icon-remove icon-black" @click="deletTP(bunk,$index)" style="top: 2px;right: 16px;"></i>
+				</div>
+			</div>
 		</div>
+		<div class="success-msg" v-text="successMsg"></div>
+		<div class="msg" v-text="errMsg"></div>
 		<div class="addTrainNo" @click="addBunk"></div>
 		<!--<div class="btn-lg btn-success" @click="addBunk" style="margin: 30px 0;">添加</div>-->
 		<div class="btn-lg btn-success" @click="updataBunk" style="margin: 30px 0;">提交</div>
@@ -33,10 +18,14 @@
 
 <script>
 	import axios from 'axios'
+	import config from '@/config'
 	export default {
 	  name: 'bunkAdmin',
 	  data () {
 	  	return {
+	  	  host: config.host,
+	  	  successMsg: '',
+	  	  errMsg: '',
 	  	  bunkList: []
 	  	}
 	  },
@@ -50,7 +39,8 @@
 	  	  let self = this;
 	  	  return axios({
 	  	  	method: 'get',
-	  	  	url: '/static/bunkEx.json',
+//	  	  	url: '/static/bunkEx.json',
+			url: this.host + '/web/bedInfos',
 	  	  	headers: {'appType': 'web','appid': 'logan'}
 	  	  })
 	  	  .then( (response) => {
@@ -72,28 +62,46 @@
 	  	  this.bunkList.push(aBunk);
 	  	},
 	  	updataBunk() {//更新铺位看板
-	      let updataBunk = "";
+	      let updataBunk = [];
+	      this.successMsg = '';
+	      this.errMsg = '';
 	      let self = this;
 	  	  for (var i = 0; i < this.bunkList.length; i++) {
 	  	  	if (this.bunkList[i].bedNo) {
-	  	  	  updataBunk = updataBunk + this.bunkList[i].bedNo + ","
+	  	  	  updataBunk.push(this.bunkList[i].bedNo);
 	  	  	};
 	  	  };
-	  	  updataBunk = updataBunk.substring(0,updataBunk.lastIndexOf(','))
+	  	  this.$emit('loadShow');
 	  	  return axios({//接口25，更新铺位信息
-	  	  	method: 'get',
-	  	  	url: this.HOST + '/web/update-bedNos',
-	  	  	params: updataBunk,
+	  	  	method: 'post',
+	  	  	url: this.host + '/web/bedno/update',
+	  	  	data: {"bedNos":updataBunk},
 	  	  	headers: {'appType': 'web','appid': 'logan'}
 	  	  })
 	  	  .then( (response) => {
+	  	  	this.$emit('loadHide');
 	  	  	var data = response.data
 	  	  	if (data.type == 1) {
 	  	  	  self.callBunkAd();
+	  	  	  self.successMsg = '铺位更新成功'
+	  	  	  self.hideMsg();
+	  	  	} else if(data.type == 0){
+	  	  	  self.errMsg = data.msg;
+	  	  	  self.hideMsg();
 	  	  	}
 	  	  }).catch( (error) => {
+	  	  	this.$emit('loadHide');
 	  	  	console.log('铺位看板获取失败')
+	  	  	self.errMsg = '铺位看板获取失败';
+	  	  	self.hideMsg();
 	  	  })
+	  	},
+	  	hideMsg () {
+	  	  clearTimeout(this.msgHide);
+	  	  this.msgHide = setTimeout(()=>{
+	  		this.successMsg = '';
+	  		this.errMsg = '';
+	  	  },5000)
 	  	}
 	  }
 	}
@@ -137,5 +145,16 @@
 	}
 	.addTrainNo:hover {
 	    color: #69c;
+	}
+	.bunk-revise{
+		display: inline-block;
+		width: 140px;
+		position: relative;
+		margin-top: 5px;
+	}
+	.bunk-revise div{
+		position: absolute;
+		top: 5px;
+		right: 5px;
 	}
 </style>

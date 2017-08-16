@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<div class="data-query-nav">
+		<div class="data-query-nav controllerSys">
 			<div style="margin-bottom: 20px;">
 				<div class="btn-sm btn-info" @click="dateRangeType('日')" :class="{isChecked:isDay}">日</div>
 				<div class="btn-sm btn-info" @click="dateRangeType('周')" :class="{isChecked:isWeek}">周</div>
@@ -11,9 +11,12 @@
 				:highlighted="state.highlighted" @input="getDateRange('pick')"></datepicker>
 			<label for="driverName">司机：</label>
 			<input type="text" name="driverName" id="driverName" v-model="dateVo.driverName" />
-			<div class="btn-sm btn-primary" style="margin-left: 40px;" @click="getDataInfo()">查询</div>
+			<div class="btn-sm btn-success" style="margin-left: 40px;" @click="getDataInfo()">查询</div>
 		</div>
-		<div class="callBedTable">
+		<div class="page-info"><label>接待司机：</label><span>{{dq.servedDriverNum}}人次</span></div>
+	    <div class="page-info"><label>叫班响应率 ：</label><span>{{dq.responseRate}}</span></div>
+	    <div class="page-info"><label>出发及时率：</label><span>{{dq.inTimeRate}}</span></div>
+		<div class="callBedTable" v-if="dateVo.type == 1">
 			<table style="width: 100%" class="table-hover">
 				<colgroup>
 					<col style="width:60px">
@@ -38,33 +41,33 @@
 					<th>设备编号</th>
 				</thead>
 				<tbody>
-					<tr v-for="(completed,$index) in dq.completedList">
+					<tr v-for="(completed,$index) in dq.detailList">
 						<td>
-							<div style="max-width:60px" v-text="$index+1"></div>
+							<div style="min-width:40px" v-text="$index+1"></div>
 						</td>
 						<td>
-							<div style="min-width:95px" v-text="completed.trainNo"></div>
+							<div style="min-width:65px" v-text="completed.trainNo"></div>
 						</td>
 						<td>
-							<div style="min-width:95px" v-text="completed.driverName"></div>
+							<div style="min-width:65px" v-text="completed.driverName"></div>
 						</td>
 						<td>
-							<div style="min-width:125px">{{completed.startTime | formatTime}}</div>
+							<div style="min-width:65px">{{completed.startTime | formatTime}}</div>
 						</td>
 						<td>
-							<div style="min-width:125px">{{completed.remindRealTime1 | formatTime}}</div>
+							<div style="min-width:65px">{{completed.remindRealTime1 | formatTime}}</div>
 						</td>
 						<td>
-							<div style="min-width:125px">{{completed.remindRealTime2 | formatTime}}</div>
+							<div style="min-width:65px">{{completed.remindRealTime2 | formatTime}}</div>
 						</td>
 						<td>
-							<div style="min-width:125px">{{completed.adminRemindTime | formatTime}}</div>
+							<div style="min-width:65px">{{completed.adminRemindTime | formatTime}}</div>
 						</td>
 						<td>
-							<div style="min-width:125px">{{completed.endRealTime | formatTime}}</div>
+							<div style="min-width:65px">{{completed.endRealTime | formatTime}}</div>
 						</td>
 						<td>
-							<div style="min-width:125px" v-text="completed.mid"></div>
+							<div style="min-width:65px" v-text="completed.bid"></div>
 						</td>
 					</tr>
 				</tbody>
@@ -76,10 +79,12 @@
 <script>
 	import Datepicker from 'vuejs-datepicker';
 	import axios from 'axios'
+	import config from '@/config'
 	export default {
 	  name: 'dataQuery',
 	  data () {
 	  	return {
+	  		host: config.host,
 	  		dateVo: {
 	  			type: 1
 	  		},
@@ -112,11 +117,11 @@
 	  	getDataInfo () {//接口13,历史查询
 	  	  let self = this;
 	  	  return axios({
-//	  	  	method: 'post',
-//	  	  	url: '/web/queryHistoryData',
-//	  	  	data: this.dateVo,
-			method: 'get',
-			url: '/static/dataQuery.json',
+	  	  	method: 'post',
+	  	  	url: this.host + '/web/queryHistoryData',
+	  	  	data: this.dateVo,
+//			method: 'get',
+//			url: '/static/dataQuery.json',
 	  	  	headers: {'appType': 'web','appid': 'logan'}
 	  	  })
 	  	  .then( (response) => {
@@ -135,9 +140,9 @@
 	  	  	this.pickDate = new Date();
 	  	  }
 	  	  if (this.dateType === '日') {
-	  		this.dateVo.from = this.dateToString(this.pickDate,"yyyy-MM-dd 00:00:00");
+	  		this.dateVo.from = config.dateToString(this.pickDate,"yyyy-MM-dd 00:00:00");
 	  		let nextDay = new Date(this.pickDate.getTime() + 24*60*60*1000);
-	  		this.dateVo.to = this.dateToString(nextDay,"yyyy-MM-dd 00:00:00");
+	  		this.dateVo.to = config.dateToString(nextDay,"yyyy-MM-dd 00:00:00");
 	  		if (pattern === 'init') {
 		  	  this.getDataInfo();
 		  	}
@@ -153,11 +158,11 @@
 		    //减去的天数   
 		    let minusDay = week != 0 ? week - 1 : 6; 
 		    let weekFirstDay = new Date(datePick.getTime() - (millisecond * minusDay));//获得当前周的第一天   
-		    this.dateVo.from = this.dateToString(weekFirstDay,"yyyy-MM-dd 00:00:00");
+		    this.dateVo.from = config.dateToString(weekFirstDay,"yyyy-MM-dd 00:00:00");
 		    let weekLastDay = new Date(weekFirstDay.getTime() + (millisecond * 6));//获得当前周的最后一天
-		    this.dateVo.to = this.dateToString(weekLastDay,"yyyy-MM-dd 00:00:00");
+		    this.dateVo.to = config.dateToString(weekLastDay,"yyyy-MM-dd 00:00:00");
 	  	  } else if (this.dateType === '月') {
-	  	  	let datePick = this.dateToString(this.pickDate,"yyyy-MM-dd");
+	  	  	let datePick = config.dateToString(this.pickDate,"yyyy-MM-dd");
 	  	  	let dateArr = datePick.split("-");
 	  	  	this.dateVo.from = dateArr[0] + '-' + dateArr[1] + '-01 00:00:00'
 	  	  	let nextMonth = parseInt(dateArr[1]) + 1;
@@ -186,28 +191,6 @@
 	  		this.getDateRange('changeType');
 	  		this.isMonth = true;
 	  	  }
-	  	},
-	  	dateToString(dateTime,format) {
-	  		var d, k, o;
-            o = {
-                "M+": dateTime.getMonth() + 1,
-                "d+": dateTime.getDate(),
-                "h+": dateTime.getHours(),
-                "m+": dateTime.getMinutes(),
-                "s+": dateTime.getSeconds(),
-                "q+": Math.floor((dateTime.getMonth() + 3) / 3),
-                "S": dateTime.getMilliseconds()
-            };
-            if (/(y+)/.test(format)) {
-                format = format.replace(RegExp.$1, (dateTime.getFullYear() + "").substr(4 - RegExp.$1.length));
-            }
-            for (k in o) {
-                d = o[k];
-                if (new RegExp("(" + k + ")").test(format)) {
-                    format = format.replace(RegExp.$1, RegExp.$1.length === 1 ? d : ("00" + d).substr(("" + d).length));
-                }
-            }
-            return format;
 	  	}
 	  }
 	}

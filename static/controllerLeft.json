@@ -5,7 +5,7 @@
         "servedDriverNum":1,
         "responseRate":0.98,
         "inTimeRate":0.99,
-        "bedNos":["103","104"],
+        "bedNos":[],
         "completedList":[
             {
                 "trainNo":"G201",
